@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mind lake: let your thoughts sail by</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F6F5;--panel:#FFFFFF;--ink:#142B36;--muted:#556B74;--line:rgba(20,43,54,.12);--accent:#2B6C7C;--tile:#E6EEEE;
+  --hero:#0E2533;--hero-2:#13303F;--h-ink:#EEF3F1;--h-muted:#A6BBC1;--h-line:rgba(238,243,241,.14);--glass:#9ED0D6;
+  --display:"Newsreader",Georgia,"Times New Roman",serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#0B161D;--panel:#12212A;--ink:#E6EEEF;--muted:#9FB3B9;--line:rgba(230,238,239,.12);--accent:#8CC6D0;--tile:#173039;--hero:#08151D;--hero-2:#0E212C}
+}
+:root[data-theme="dark"]{--bg:#0B161D;--panel:#12212A;--ink:#E6EEEF;--muted:#9FB3B9;--line:rgba(230,238,239,.12);--accent:#8CC6D0;--tile:#173039;--hero:#08151D;--hero-2:#0E212C}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--glass);outline-offset:3px;border-radius:8px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+.hero{background:var(--hero);color:var(--h-ink)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:1160px;margin:0 auto;padding:22px 28px}
+.mark{display:flex;align-items:center;gap:10px;color:var(--h-ink);text-decoration:none;font-family:var(--display);font-size:24px;letter-spacing:-.01em}
+.mark svg{width:30px;height:30px}
+.topbar nav{display:flex;gap:28px}
+.topbar nav a{color:var(--h-muted);text-decoration:none;font-size:15px}
+.topbar nav a:hover{color:var(--h-ink)}
+.hero-in{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.15fr);gap:56px;align-items:center;max-width:1160px;margin:0 auto;padding:36px 28px 88px}
+h1{font-family:var(--display);font-weight:300;font-size:clamp(40px,5.4vw,68px);line-height:1.04;letter-spacing:-.02em;margin:0 0 22px}
+.lede{font-size:19px;line-height:1.6;color:var(--h-muted);max-width:32ch;margin:0 0 32px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{font:inherit;font-size:16px;font-weight:500;border-radius:999px;padding:13px 24px;cursor:pointer;border:1px solid var(--h-line);background:transparent;color:var(--h-ink);transition:background .2s,border-color .2s}
+.btn:hover{border-color:var(--h-muted)}
+.btn.solid{background:var(--h-ink);color:var(--hero);border-color:var(--h-ink)}
+.btn.solid:hover{background:#FFFFFF}
+.btn.small{padding:10px 18px;font-size:15px}
+.note{margin:22px 0 0;font-size:14px;color:var(--h-muted)}
+.game{background:var(--hero-2);border:1px solid var(--h-line);border-radius:28px;padding:18px}
+.hud{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:2px 6px 14px;font-size:14px;color:var(--h-muted)}
+.meter{flex:1;min-width:140px;display:flex;align-items:center;gap:10px}
+.bar{flex:1;height:6px;border-radius:999px;background:rgba(238,243,241,.12);overflow:hidden}
+.bar span{display:block;height:100%;width:70%;border-radius:999px;background:var(--glass);transition:width .8s ease,background 1s}
+.chip{white-space:nowrap}
+.chip b{color:var(--h-ink);font-weight:500;font-variant-numeric:tabular-nums;margin-left:4px}
+.ghost{font:inherit;font-size:13px;background:transparent;border:1px solid var(--h-line);color:var(--h-ink);border-radius:999px;padding:6px 13px;cursor:pointer}
+.ghost:hover{border-color:var(--h-muted)}
+.stage{position:relative;border-radius:18px;overflow:hidden;touch-action:manipulation}
+canvas{display:block;cursor:pointer}
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;text-align:center;gap:14px;padding:22px;background:linear-gradient(to top,rgba(14,37,51,.92) 0%,rgba(14,37,51,.55) 45%,rgba(14,37,51,0) 80%)}
+.ov h2{font-family:var(--display);font-weight:300;font-size:clamp(24px,2.8vw,32px);margin:0;line-height:1.1;color:#EEF3F1}
+.ov p{margin:0;color:#C6D5D9;font-size:15px;max-width:40ch}
+#cap{min-height:50px;margin:14px 8px 8px;font-size:16px;text-align:center;color:var(--h-ink);font-family:var(--display);font-weight:300;font-size:19px;line-height:1.35}
+.controls{display:flex;justify-content:center;padding:2px 0 4px}
+#breathe{font:inherit;display:flex;align-items:center;gap:14px;padding:7px 24px 7px 7px;border-radius:999px;border:1px solid var(--h-line);background:rgba(238,243,241,.04);color:var(--h-ink);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;min-width:270px}
+#breathe:hover{border-color:var(--h-muted)}
+#breathe svg{width:52px;height:52px;flex:none}
+#breathe .trk{fill:none;stroke:rgba(238,243,241,.14);stroke-width:3}
+#ring{fill:none;stroke:var(--glass);stroke-width:3;stroke-linecap:round;transform:rotate(-90deg);transform-origin:32px 32px}
+#core{fill:var(--glass);opacity:.85;transform-origin:32px 32px;transition:transform .35s ease}
+#bLbl{display:block;font-weight:500;font-size:15px;text-align:left}
+#bSub{display:block;font-size:13px;color:var(--h-muted);text-align:left}
+.end{border-top:1px solid var(--h-line);margin-top:16px;padding:20px 6px 6px}
+.end h2{font-family:var(--display);font-weight:300;font-size:30px;margin:0 0 6px;line-height:1.1}
+.end p{margin:0 0 18px;color:var(--h-muted)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--h-line);border:1px solid var(--h-line);border-radius:16px;overflow:hidden;margin-bottom:18px}
+.stat{background:var(--hero-2);padding:12px 14px}
+.stat b{display:block;font-family:var(--display);font-weight:300;font-size:32px;line-height:1.1}
+.stat span{font-size:13px;color:var(--h-muted)}
+section{padding:96px 0}
+section+section{border-top:1px solid var(--line)}
+h2.sec{font-family:var(--display);font-weight:300;font-size:clamp(32px,3.8vw,48px);line-height:1.08;letter-spacing:-.015em;margin:0 0 14px}
+.sub{color:var(--muted);max-width:58ch;margin:0}
+.idea{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:64px;align-items:end}
+.idea p.big{font-family:var(--display);font-weight:300;font-size:clamp(28px,3.2vw,40px);line-height:1.2;margin:0;letter-spacing:-.01em}
+.head-row{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:44px}
+.fleet{display:grid;grid-template-columns:1fr 1fr;gap:56px}
+.fleet h3{font-family:var(--display);font-weight:400;font-size:26px;margin:0 0 4px}
+.fleet .how{color:var(--muted);margin:0 0 10px;font-size:15px}
+.boat{display:grid;grid-template-columns:76px minmax(0,1fr);gap:18px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.boat .tile{width:76px;height:64px;border-radius:14px;background:var(--tile);display:flex;align-items:center;justify-content:center}
+.boat svg{width:56px;height:48px}
+.boat .nm{font-weight:600;font-size:16px}
+.boat .mn{color:var(--muted);font-size:15px}
+.boat q{display:block;font-family:var(--display);font-style:italic;font-size:17px;margin-top:2px;color:var(--ink)}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px;counter-reset:s}
+.steps li{counter-increment:s;padding-top:18px;border-top:1px solid var(--ink)}
+.steps li::before{content:counter(s);font-family:var(--display);font-weight:300;font-size:44px;line-height:1;color:var(--accent);display:block}
+.steps h3{font-size:18px;font-weight:600;margin:14px 0 6px}
+.steps p{margin:0;color:var(--muted);font-size:15px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.mode{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:32px}
+.mode h3{font-family:var(--display);font-weight:400;font-size:28px;margin:0 0 8px}
+.mode p{color:var(--muted);margin:0 0 20px}
+.mode .meta{font-size:14px;color:var(--muted);margin:0}
+.mode .meta b{color:var(--ink);font-weight:600}
+.lbtn{font:inherit;font-weight:500;font-size:15px;border-radius:999px;padding:11px 20px;cursor:pointer;background:var(--ink);color:var(--bg);border:1px solid var(--ink);margin-top:20px}
+.lbtn.out{background:transparent;color:var(--ink);border-color:var(--line)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:start}
+.prompts{margin:24px 0 0;padding:0;list-style:none}
+.prompts li{padding:18px 0;border-bottom:1px solid var(--line);font-family:var(--display);font-size:22px;font-weight:300;line-height:1.3}
+.prompts li:first-child{border-top:1px solid var(--line)}
+.prompts li span{display:block;font-family:var(--body);font-size:14px;color:var(--muted);margin-top:4px}
+.science{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:36px}
+.science .num{font-family:var(--display);font-weight:300;font-size:88px;line-height:1;color:var(--accent);margin:0 0 6px}
+footer{background:var(--hero);color:var(--h-muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;padding-top:40px;padding-bottom:44px}
+footer .mark{font-size:20px}
+@media (max-width:960px){
+  .hero-in{grid-template-columns:1fr;gap:36px;padding-top:12px;padding-bottom:64px}
+  .lede{max-width:none}
+  .idea,.fleet,.split,.modes{grid-template-columns:1fr;gap:36px}
+  .steps{grid-template-columns:1fr 1fr}
+  section{padding:72px 0}
+}
+@media (max-width:560px){
+  .wrap,.topbar,.hero-in{padding-left:18px;padding-right:18px}
+  .topbar nav{display:none}
+  .game{padding:12px;border-radius:22px}
+  .steps{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #breathe{min-width:0;width:100%}
+  .mode,.science{padding:24px}
+}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="hero">
+  <header class="topbar">
+    <a class="mark" href="#play" aria-label="Mind lake home">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18.5" fill="none" stroke="#9ED0D6" stroke-width="1.5"/><path d="M9 25.5 q3.7-2.6 7.4 0 t7.4 0 t7.4 0" fill="none" stroke="#9ED0D6" stroke-width="1.5" stroke-linecap="round"/><path d="M20.5 10 L20.5 22 L27.5 22 Z" fill="#EEF3F1"/></svg>
+      Mind lake
+    </a>
+    <nav aria-label="Sections"><a href="#idea">The idea</a><a href="#boats">The boats</a><a href="#how">How it works</a><a href="#families">For families</a></nav>
+  </header>
+  <div class="hero-in" id="play">
+    <div>
+      <h1>You are the shore. Your thoughts are only boats.</h1>
+      <p class="lede">Sit quietly inside your own mind and watch each thought sail past. Notice its color, take a slow breath, and let it go.</p>
+      <div class="cta">
+        <button class="btn solid" data-start="game">Begin a 90-second sit</button>
+        <button class="btn" data-start="free">Just watch</button>
+      </div>
+      <p class="note">For grown-ups and kids. No sign-up, no scores to lose.</p>
+    </div>
+    <div class="game">
+      <div class="hud">
+        <div class="meter"><span>Calm</span><div class="bar" role="meter" aria-label="Calm" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" id="calmMeter"><span id="calmBar"></span></div></div>
+        <span class="chip">Time<b id="timer">1:30</b></span>
+        <span class="chip">Let pass<b id="passN">0</b></span>
+        <button class="ghost" id="pauseBtn" hidden>Pause</button>
+        <button class="ghost" id="soundBtn" aria-pressed="false">Sound off</button>
+      </div>
+      <div class="stage" id="stage">
+        <canvas id="lake" role="img" aria-label="A human head in profile. Inside it, a girl sits cross-legged on a sandy shore, meditating, while colored thought boats sail slowly across a lake."></canvas>
+        <div class="ov" id="startOv">
+          <h2>Take a seat on the sand</h2>
+          <p>Tap light boats to notice them. When a heavy boat drifts toward the shore, hold the breath button, then breathe out to let it go.</p>
+          <div class="cta" style="justify-content:center">
+            <button class="btn solid small" data-start="game">Begin a 90-second sit</button>
+            <button class="btn small" data-start="free">Just watch</button>
+          </div>
+        </div>
+      </div>
+      <p id="cap" aria-live="polite">Boats are drifting by. Choose how you'd like to sit.</p>
+      <div class="controls">
+        <button id="breathe" aria-label="Hold to breathe in, release to breathe out. Keyboard: hold the space bar.">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><circle class="trk" cx="32" cy="32" r="28"/><circle id="ring" cx="32" cy="32" r="28" stroke-dasharray="175.93" stroke-dashoffset="175.93"/><circle id="core" cx="32" cy="32" r="9"/></svg>
+          <span><span id="bLbl">Hold to breathe in</span><span id="bSub">Release to breathe out</span></span>
+        </button>
+      </div>
+      <div class="end" id="endPanel" hidden>
+        <h2>Your sit is complete</h2>
+        <p id="endMsg"></p>
+        <div class="stats">
+          <div class="stat"><b id="sCalm">0</b><span>Calm score</span></div>
+          <div class="stat"><b id="sPass">0</b><span>Boats let pass</span></div>
+          <div class="stat"><b id="sNotice">0</b><span>Light boats noticed</span></div>
+          <div class="stat"><b id="sBreath">0</b><span>Slow breaths</span></div>
+          <div class="stat"><b id="sPark">0</b><span>Boats that docked</span></div>
+          <div class="stat"><b id="sBest">0</b><span>Your best calm</span></div>
+        </div>
+        <div class="cta">
+          <button class="btn solid small" data-start="game">Sit again</button>
+          <button class="btn small" data-start="free">Just watch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+<section id="idea"><div class="wrap idea">
+  <p class="big">Thoughts arrive on their own. You don't get to choose which boats come in, only whether you climb aboard.</p>
+  <div>
+    <h2 class="sec">The idea</h2>
+    <p class="sub">Mind lake turns a classic observing-the-mind practice into a picture anyone can hold. You sit on the shore. Each thought is a boat with a colored sail. Some are light and bright, some are heavy. All of them sail on if you let them.</p>
+  </div>
+</div></section>
+
+<section id="boats"><div class="wrap">
+  <div class="head-row">
+    <h2 class="sec" style="margin:0">Know your boats</h2>
+    <p class="sub" style="max-width:44ch">Naming the color of a thought creates a little space between you and it. That space is where calm begins.</p>
+  </div>
+  <div class="fleet">
+    <div><h3>Light boats</h3><p class="how">Notice them, enjoy them, and let them sail on too.</p><div id="lightList"></div></div>
+    <div><h3>Heavy boats</h3><p class="how">Don't climb aboard. Breathe slowly and watch them leave.</p><div id="heavyList"></div></div>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="head-row">
+    <h2 class="sec" style="margin:0">How a sit works</h2>
+    <p class="sub" style="max-width:44ch">Ninety seconds, four simple moves. There's no way to lose, only ways to come back to the shore.</p>
+  </div>
+  <ol class="steps">
+    <li><h3>Sit</h3><p>You are the girl on the sand. The boats are not you. They simply pass through your view.</p></li>
+    <li><h3>Notice</h3><p>Tap a light boat to notice it. Your calm grows a little, and the boat keeps sailing.</p></li>
+    <li><h3>Breathe</h3><p>When a heavy boat drifts toward the shore, hold the breath button until the ring fills.</p></li>
+    <li><h3>Let go</h3><p>Release to breathe out. A soft breeze carries heavy boats back to sea and out of sight.</p></li>
+  </ol>
+</div></section>
+
+<section><div class="wrap modes">
+  <div class="mode">
+    <h3>The 90-second sit</h3>
+    <p>A short guided game. Heavy boats drift toward the shore, and a slow breath sends them back out. The sky brightens as your calm grows.</p>
+    <p class="meta"><b>Best for</b> a reset during the day, before school, or after a hard moment.</p>
+    <button class="lbtn" data-start="game">Begin a 90-second sit</button>
+  </div>
+  <div class="mode">
+    <h3>Just watch</h3>
+    <p>No timer and no score. Each boat shows the thought it carries, and you simply watch it come and go across the water.</p>
+    <p class="meta"><b>Best for</b> bedtime, a quiet minute together, or longer meditation.</p>
+    <button class="lbtn out" data-start="free">Just watch</button>
+  </div>
+</div></section>
+
+<section id="families"><div class="wrap split">
+  <div>
+    <h2 class="sec">Talk about it together</h2>
+    <p class="sub">After a sit, a few gentle questions help children put feelings into words.</p>
+    <ul class="prompts">
+      <li>What color boat is on your lake right now?<span>Naming the boat gives a little space from it.</span></li>
+      <li>Did a heavy boat try to dock today?<span>Ask without fixing. Just listen.</span></li>
+      <li>What helped it sail away?<span>A breath, a hug, a walk, a glass of water.</span></li>
+      <li>Which light boat would you like to see more of?<span>Kindness and friendship can be invited.</span></li>
+    </ul>
+  </div>
+  <div class="science">
+    <p class="num">90s</p>
+    <h3 style="font-family:var(--display);font-weight:400;font-size:26px;margin:0 0 10px">Why ninety seconds</h3>
+    <p class="sub">A feeling often rises and falls like a wave. If we stop feeding it with more thoughts, its physical rush can pass in about a minute and a half. The idea was popularized by neuroanatomist Jill Bolte Taylor, and Mind lake turns it into a picture: the boat crosses, and the water goes still again.</p>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <a class="mark" href="#play" aria-label="Back to top">Mind lake</a>
+  <span>A mindfulness practice for everyday feelings. It isn't a replacement for care from a doctor or counselor.</span>
+</div></footer>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const TYPES={
+  white:{c:'#FBFBF8',s:'#9AA6AB',name:'White boat',mean:'Kindness, a wish to help',heavy:false,th:['Maybe I can help carry that.','I could share my lunch.','Let me hold the door for them.'],note:'A kind thought. Enjoy it, then let it sail on.'},
+  yellow:{c:'#EDC567',s:'#A47E26',name:'Yellow boat',mean:'Friendship and connection',heavy:false,th:['Want to play together?','I miss my friend. I could call.','We make a good team.'],note:'A thought about connection. Smile at it as it passes.'},
+  green:{c:'#86B26B',s:'#4B7537',name:'Green boat',mean:'Hope and positive thinking',heavy:false,th:['I can do this.','Today feels bright.','I learned something new.'],note:'A hopeful thought. Even good boats keep sailing, and that\u2019s okay.'},
+  pink:{c:'#EBA9BC',s:'#A35A74',name:'Pink boat',mean:'Love and gratitude',heavy:false,th:['Thank you for the little things.','I\u2019m lucky to have my family.','This warm cup feels nice.'],note:'A grateful thought. Let it warm you as it passes.'},
+  red:{c:'#D3564B',s:'#8A2D25',name:'Red boat',mean:'Anger or ego',heavy:true,th:['That\u2019s not fair!','I\u2019m always right.','How dare they!'],note:'A red boat, anger. Notice it, name it. No need to climb aboard.'},
+  black:{c:'#2E3135',s:'#111315',name:'Black boat',mean:'Envy or jealousy',heavy:true,th:['Why do they get everything?','Their life is better than mine.','I wanted that.'],note:'A black boat, envy. Just watch. It will leave on its own.'},
+  grey:{c:'#949CA1',s:'#535C61',name:'Grey boat',mean:'Worry and overthinking',heavy:true,th:['What if it goes wrong?','Did I say something silly?','I\u2019ll never finish.'],note:'A grey boat, worry. You don\u2019t have to answer it. Let it drift.'}
+};
+const KEYS=Object.keys(TYPES),LIGHT=KEYS.filter(k=>!TYPES[k].heavy),HEAVY=KEYS.filter(k=>TYPES[k].heavy);
+function boatSVG(t){return '<svg viewBox="-34 -46 68 62" aria-hidden="true"><line x1="0" y1="1" x2="0" y2="-40" stroke="currentColor" stroke-width="1.6"/><path d="M3 -38 L3 -6 L26 -6 Z" fill="'+t.c+'" stroke="'+t.s+'"/><path d="M-3 -30 L-3 -6 L-19 -6 Z" fill="'+t.c+'" stroke="'+t.s+'"/><path d="M-28 0 L28 0 L20 11 L-20 11 Z" fill="'+t.c+'" stroke="'+t.s+'"/></svg>'}
+function listHTML(keys){return keys.map(k=>{const t=TYPES[k];return '<div class="boat"><div class="tile" style="color:var(--ink)">'+boatSVG(t)+'</div><div><div class="nm">'+t.name+'</div><div class="mn">'+t.mean+'</div><q>'+t.th[0]+'</q></div></div>'}).join('')}
+$('#lightList').innerHTML=listHTML(LIGHT);$('#heavyList').innerHTML=listHTML(HEAVY);
+
+const cv=$('#lake'),ctx=cv.getContext('2d'),stage=$('#stage');
+const HEAD_D='M252,412 C256,386 254,362 244,342 C206,314 184,264 182,202 C180,120 248,42 352,36 C444,30 512,86 524,160 C527,178 530,188 527,200 C524,210 528,220 536,232 C546,246 558,256 562,264 C564,270 556,274 546,274 C540,276 540,282 544,288 C548,293 544,298 538,300 C544,304 545,312 538,318 C532,322 530,326 532,332 C538,342 536,356 522,362 C500,370 470,370 452,372 C446,386 446,400 448,412';
+const HEAD=new Path2D(HEAD_D+' Z'),HEAD_LINE=new Path2D(HEAD_D);
+const W=420,H=392,OX=162,OY=24;let S=1,dpr=1;
+function resize(){const w=stage.clientWidth;S=w/W;dpr=Math.min(2,window.devicePixelRatio||1);cv.style.width=w+'px';cv.style.height=(H*S)+'px';cv.width=Math.round(w*dpr);cv.height=Math.round(H*S*dpr)}
+new ResizeObserver(resize).observe(stage);resize();
+const mq=matchMedia('(prefers-color-scheme: dark)');
+function isNight(){const t=document.documentElement.getAttribute('data-theme');if(t==='dark')return true;if(t==='light')return false;return mq.matches}
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function hx(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}
+function mix(a,b,t){const A=hx(a),B=hx(b);return 'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')+')'}
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+
+const LANES=[{y:214,s:.54,v:11},{y:242,s:.74,v:14.5},{y:270,s:.94,v:18}];
+const SLOTS=[292,430,258,464,236,496].map(x=>({x,b:null}));
+const GIRL={x:360,y:364};
+let mode='idle',prevMode=null,boats=[],rings=[],floats=[],calm=70,t=0,gt=0,spawnT=1,calmSum=0,calmN=0,bz=-1;
+let stats={pass:0,noticed:0,breaths:0,grabbed:0,parked:0};
+const breath={ph:'idle',t:0};
+const clouds=[{x:250,y:92,w:40,v:1.2},{x:400,y:70,w:30,v:.9},{x:300,y:138,w:24,v:1.5},{x:480,y:120,w:32,v:1.1}];
+const stars=Array.from({length:36},()=>({x:rnd(200,520),y:rnd(52,186),r:rnd(.4,1.1),p:rnd(0,6)}));
+function say(s){$('#cap').textContent=s}
+function freeSlot(x){let best=null,bd=1e9;SLOTS.forEach(s=>{if(s.b&&!['tug','docked'].includes(s.b.st))s.b=null;if(!s.b){const d=Math.abs(s.x-x);if(d<bd){bd=d;best=s}}});return best}
+function spawn(k){
+  if(boats.length>=7)return;
+  const cnt=LANES.map(L=>boats.filter(b=>b.ly===L.y&&b.st==='sail').length),min=Math.min(...cnt);
+  const L=pick(LANES.filter((L,i)=>cnt[i]===min)),dir=Math.random()<.5?1:-1,T=TYPES[k];
+  boats.push({k,T,x:dir>0?168:576,y:L.y,ly:L.y,sc:L.s,ls:L.s,v:L.v,dir,st:'sail',tugX:rnd(260,490),tugChecked:false,noticed:false,lab:pick(T.th),labT:mode==='game'?3.5:5.5,ph:rnd(0,6),fast:1,slot:null});
+  if(mode==='free')say(T.name+', '+T.mean.toLowerCase()+': \u201c'+boats[boats.length-1].lab+'\u201d');
+}
+function chooseKind(){if(mode==='game'){const p=t/90;return Math.random()<.45+.15*p?pick(HEAVY):pick(LIGHT)}return pick(KEYS)}
+function startTug(b,fast){const s=freeSlot(b.x);if(!s){b.tugChecked=true;return false}s.b=b;b.slot=s;b.st='tug';b.tx=s.x;b.ty=294;b.tv=fast?48:8;b.labT=3.5;return true}
+function releaseBoat(b){if(b.slot){b.slot.b=null;b.slot=null}b.st='released';b.dir=b.x<360?-1:1;b.fast=2;b.tugChecked=true}
+function begin(m){
+  initAudioMaybe();
+  boats=boats.filter(b=>b.st==='sail'||b.st==='released');boats.forEach(b=>{b.noCount=true;b.tugChecked=true});SLOTS.forEach(s=>s.b=null);
+  mode=m;t=0;calm=70;calmSum=0;calmN=0;spawnT=1.5;stats={pass:0,noticed:0,breaths:0,grabbed:0,parked:0};$('#passN').textContent='0';
+  $('#startOv').hidden=true;$('#endPanel').hidden=true;$('#pauseBtn').hidden=false;$('#pauseBtn').textContent=m==='free'?'End sit':'Pause';
+  $('#timer').textContent=m==='free'?'Open':'1:30';
+  say(m==='game'?'Your sit has begun. Breathe normally and watch the water.':'Just watch. No timer, no score. Boats come, and boats go.');
+  $('.game').scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'});
+}
+function endGame(){
+  mode='end';$('#pauseBtn').hidden=true;const avg=Math.round(calmN?calmSum/calmN:calm);let best=0;
+  try{best=parseInt(localStorage.getItem('mindlake-best')||'0',10)||0;if(avg>best){best=avg;localStorage.setItem('mindlake-best',String(avg))}}catch(e){best=Math.max(best,avg)}
+  $('#sCalm').textContent=avg;$('#sPass').textContent=stats.pass;$('#sNotice').textContent=stats.noticed;$('#sBreath').textContent=stats.breaths;$('#sPark').textContent=stats.parked;$('#sBest').textContent=best;
+  $('#endMsg').textContent=avg>=75?'Your shore stayed quiet. Boats came and went, and you stayed you.':avg>=50?'Some boats pulled at you, and you kept returning to the breath. That is the whole practice.':'A misty lake today. That happens to everyone. Every slow breath was a step back to the shore.';
+  $('#endPanel').hidden=false;say('The ninety seconds are up. Notice how your body feels right now.');chime(659);setTimeout(()=>chime(988),320);
+}
+function togglePause(){
+  if(mode==='free'){mode='idle';$('#pauseBtn').hidden=true;$('#startOv').hidden=false;$('#timer').textContent='1:30';say('Boats are drifting by. Choose how you\u2019d like to sit.');return}
+  if(mode==='game'){prevMode='game';mode='paused';$('#pauseBtn').textContent='Resume';say('Paused. The lake will wait for you.')}
+  else if(mode==='paused'){mode=prevMode;$('#pauseBtn').textContent='Pause';say('Welcome back to the shore.')}
+}
+document.querySelectorAll('[data-start]').forEach(b=>b.addEventListener('click',()=>begin(b.dataset.start)));
+$('#pauseBtn').addEventListener('click',togglePause);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='game')togglePause()});
+function breatheIn(){if(breath.ph!=='idle'||mode==='paused')return;breath.ph='in';breath.t=0;initAudioMaybe()}
+function breatheOut(){
+  if(breath.ph!=='in')return;
+  if(breath.t<2){breath.ph='idle';breath.t=0;say('Breathe in a little longer, until the ring is almost full.');return}
+  breath.ph='out';breath.t=0;bz=0;whoosh();let n=0;
+  boats.forEach(b=>{if(b.T.heavy&&(b.st==='tug'||b.st==='docked')){releaseBoat(b);n++}});
+  if(mode==='game'){stats.breaths++;calm+=4+3*n}
+  say(n?'You breathed out, and '+(n===1?'a heavy boat':n+' heavy boats')+' drifted back to sea.':'A slow breath out. The shore feels steadier.');
+}
+const bb=$('#breathe');
+bb.addEventListener('pointerdown',e=>{e.preventDefault();try{bb.setPointerCapture(e.pointerId)}catch(_){}breatheIn()});
+['pointerup','pointercancel'].forEach(ev=>bb.addEventListener(ev,breatheOut));
+bb.addEventListener('keydown',e=>{if(e.key==='Enter')e.preventDefault()});
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'&&!e.repeat){const a=document.activeElement;if(a&&a.tagName==='BUTTON'&&a!==bb)return;e.preventDefault();breatheIn()}
+  if((e.key==='n'||e.key==='N')&&!e.repeat){const b=boats.filter(b=>!b.T.heavy&&!b.noticed&&b.st==='sail').pop();if(b)tapBoat(b)}
+});
+document.addEventListener('keyup',e=>{if(e.code==='Space'){const a=document.activeElement;if(a&&a.tagName==='BUTTON'&&a!==bb)return;e.preventDefault();breatheOut()}});
+function tapBoat(b){
+  b.labT=3.5;
+  if(!b.T.heavy){
+    if(mode==='game'&&!b.noticed){stats.noticed++;calm+=5;floats.push({x:b.x,y:b.y-52*b.sc,txt:'Noticed',t:0})}
+    b.noticed=true;rings.push({x:b.x,y:b.y-18*b.sc,r:6,l:1});say(b.T.note);chime(pick([523,587,659,784]));
+  }else if(mode==='game'&&b.st==='sail'){
+    if(startTug(b,true)){stats.grabbed++;calm-=6;thud();say('You climbed aboard the '+b.T.name.toLowerCase()+'. That\u2019s okay. Hold the breath button, then breathe out to let it go.')}
+  }else if(b.st==='docked'||b.st==='tug')say('Tapping won\u2019t move it. Hold the breath button and breathe out slowly.');
+  else say(b.T.note);
+}
+cv.addEventListener('pointerdown',e=>{
+  if(mode==='paused')return;const r=cv.getBoundingClientRect(),lx=(e.clientX-r.left)/S+OX,ly=(e.clientY-r.top)/S+OY;
+  const hit=[...boats].sort((a,b)=>b.y-a.y).find(b=>Math.abs(lx-b.x)<36*b.sc&&ly>b.y-46*b.sc&&ly<b.y+18*b.sc);if(hit)tapBoat(hit);
+});
+function update(dt){
+  gt+=dt;
+  if(breath.ph==='in')breath.t=Math.min(4.5,breath.t+dt);else if(breath.ph==='out'){breath.t+=dt;if(breath.t>3.5){breath.ph='idle';breath.t=0}}
+  if(bz>=0){bz+=dt;if(bz>3)bz=-1}
+  const prog=t/90;
+  if(mode==='game'){t+=dt;const rem=Math.max(0,Math.ceil(90-t));$('#timer').textContent=Math.floor(rem/60)+':'+String(rem%60).padStart(2,'0');if(t>=90)endGame()}
+  if(mode!=='end'){spawnT-=dt;if(spawnT<=0){spawn(chooseKind());spawnT=mode==='game'?5-1.8*prog+rnd(-.5,.5):rnd(6.5,8.5)}}
+  clouds.forEach(c=>{c.x+=c.v*dt;if(c.x>560)c.x=180});
+  let docked=0;
+  boats=boats.filter(b=>{
+    b.ph+=dt;if(b.labT>0)b.labT-=dt;
+    if(b.st==='sail'||b.st==='released'){
+      b.x+=b.dir*b.v*dt*b.fast;b.y+=(b.ly-b.y)*Math.min(1,dt*1.1);b.sc+=(b.ls-b.sc)*Math.min(1,dt*1.1);
+      if(b.st==='released'&&Math.abs(b.y-b.ly)<1.5){b.st='sail';b.fast=1.5}
+      if(mode==='game'&&b.st==='sail'&&b.T.heavy&&!b.tugChecked&&((b.dir>0&&b.x>b.tugX)||(b.dir<0&&b.x<b.tugX))){
+        b.tugChecked=true;if(Math.random()<.4+.35*prog&&startTug(b,false))say('A '+b.T.name.toLowerCase()+' is drifting toward your shore: \u201c'+b.lab+'\u201d Hold to breathe in, then let it go.');
+      }
+      if(b.x<164||b.x>580){if(mode==='game'&&!b.noCount){stats.pass++;$('#passN').textContent=stats.pass}return false}
+    }else if(b.st==='tug'){
+      const dx=b.tx-b.x,dy=b.ty-b.y,d=Math.hypot(dx,dy),step=b.tv*dt;
+      if(d<=step+.5){b.x=b.tx;b.y=b.ty;b.st='docked';if(mode==='game'){stats.parked++;calm-=10}thud();say('The '+b.T.name.toLowerCase()+' has docked on your shore. It\u2019s heavy, but it isn\u2019t you. Breathe it away.')}
+      else{b.x+=dx/d*step;b.y+=dy/d*step}
+      b.sc+=(1-b.sc)*Math.min(1,dt*.6);
+    }else if(b.st==='docked')docked++;
+    return true;
+  });
+  if(mode==='game'){calm-=docked*.8*dt;if(!docked)calm+=.35*dt;calmSum+=calm*dt;calmN+=dt}
+  else if(mode==='free'||mode==='idle')calm+=(85-calm)*Math.min(1,dt*.3);
+  calm=Math.max(0,Math.min(100,calm));
+  rings=rings.filter(r=>{r.r+=dt*22;r.l-=dt*.7;return r.l>0});
+  floats=floats.filter(f=>{f.t+=dt;return f.t<2});
+  $('#calmBar').style.width=calm.toFixed(0)+'%';$('#calmBar').style.background=calm<35?'#D9A28F':'var(--glass)';$('#calmMeter').setAttribute('aria-valuenow',Math.round(calm));
+  const ring=$('#ring'),core=$('#core'),L=$('#bLbl'),Sb=$('#bSub');
+  if(breath.ph==='in'){const p=Math.min(1,breath.t/4);ring.style.strokeDashoffset=(175.93*(1-p)).toFixed(1);core.style.transform='scale('+(1+p*1.1).toFixed(2)+')';L.textContent=p<1?'Breathing in\u2026 '+Math.max(1,Math.ceil(4-breath.t)):'Now let go';Sb.textContent='Release to breathe out'}
+  else if(breath.ph==='out'){const p=Math.min(1,breath.t/3.5);ring.style.strokeDashoffset=(175.93*p).toFixed(1);core.style.transform='scale('+(2.1-p*1.1).toFixed(2)+')';L.textContent='Breathing out\u2026';Sb.textContent='Let the breeze carry it'}
+  else{ring.style.strokeDashoffset='175.93';core.style.transform='scale(1)';L.textContent='Hold to breathe in';Sb.textContent='Release to breathe out'}
+}
+function cloud(x,y,w,col){ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y,w,w*.26,0,0,7);ctx.ellipse(x-w*.38,y+2,w*.42,w*.2,0,0,7);ctx.ellipse(x+w*.18,y-w*.14,w*.4,w*.24,0,0,7);ctx.fill()}
+function drawBoat(b,night){
+  const bob=reduce?0:Math.sin(gt*.9+b.ph)*(b.st==='docked'?.3:.8);
+  ctx.save();ctx.translate(b.x,b.y+bob);
+  ctx.fillStyle=night?'rgba(0,0,0,.25)':'rgba(20,50,70,.14)';ctx.beginPath();ctx.ellipse(0,14*b.sc,25*b.sc,2.6*b.sc,0,0,7);ctx.fill();
+  if(b.noticed&&!b.T.heavy){ctx.fillStyle='rgba(255,244,214,.22)';ctx.beginPath();ctx.arc(0,-16*b.sc,28*b.sc,0,7);ctx.fill()}
+  ctx.scale(b.dir*b.sc,b.sc);if(b.st==='docked')ctx.rotate(-.05);
+  ctx.strokeStyle=night?'#C9D2D6':'#3B4246';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(0,1);ctx.lineTo(0,-41);ctx.stroke();
+  ctx.lineWidth=1;ctx.fillStyle=b.T.c;ctx.strokeStyle=b.T.s;
+  ctx.beginPath();ctx.moveTo(3,-39);ctx.quadraticCurveTo(14,-22,27,-6);ctx.lineTo(3,-6);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-3,-31);ctx.lineTo(-3,-6);ctx.lineTo(-20,-6);ctx.quadraticCurveTo(-10,-17,-3,-31);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-30,0);ctx.lineTo(30,0);ctx.quadraticCurveTo(26,10,19,11);ctx.lineTo(-19,11);ctx.quadraticCurveTo(-26,10,-30,0);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.restore();
+}
+function drawGirl(night,br){
+  ctx.save();ctx.translate(GIRL.x,GIRL.y);
+  const skin='#D9A47E',hair=night?'#2A211D':'#3A2A22',top=night?'#7A9C8E':'#8FB3A2',topD=night?'#66867A':'#7A9E8D',pants=night?'#3E5262':'#4E6578';
+  ctx.fillStyle=night?'rgba(0,0,0,.25)':'rgba(120,90,50,.18)';ctx.beginPath();ctx.ellipse(0,4,42,6,0,0,7);ctx.fill();
+  ctx.fillStyle=pants;ctx.beginPath();ctx.moveTo(-38,-2);ctx.quadraticCurveTo(-40,-14,-24,-15);ctx.quadraticCurveTo(0,-18,24,-15);ctx.quadraticCurveTo(40,-14,38,-2);ctx.quadraticCurveTo(0,4,-38,-2);ctx.fill();
+  ctx.scale(1,1+br*.025);
+  ctx.strokeStyle=topD;ctx.lineWidth=6.5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(-14,-41);ctx.quadraticCurveTo(-27,-30,-29,-14);ctx.moveTo(14,-41);ctx.quadraticCurveTo(27,-30,29,-14);ctx.stroke();
+  ctx.fillStyle=skin;ctx.beginPath();ctx.ellipse(-29.5,-12,3.6,2.8,0,0,7);ctx.ellipse(29.5,-12,3.6,2.8,0,0,7);ctx.fill();
+  ctx.fillStyle=top;ctx.beginPath();ctx.moveTo(-13,-12);ctx.bezierCurveTo(-15,-24,-20,-37,-13,-43);ctx.bezierCurveTo(-7,-47,7,-47,13,-43);ctx.bezierCurveTo(20,-37,15,-24,13,-12);ctx.quadraticCurveTo(0,-9,-13,-12);ctx.fill();
+  ctx.fillStyle=skin;ctx.fillRect(-3.5,-52,7,8);
+  ctx.fillStyle=hair;ctx.beginPath();ctx.arc(0,-60,10.5,0,7);ctx.fill();
+  ctx.beginPath();ctx.moveTo(-9.5,-60);ctx.bezierCurveTo(-11,-46,-10,-34,-6,-24);ctx.quadraticCurveTo(0,-19,6,-24);ctx.bezierCurveTo(10,-34,11,-46,9.5,-60);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.arc(0,-72,5.2,0,7);ctx.fill();
+  ctx.fillStyle=night?'#A9C9D0':'#E8B9A6';ctx.fillRect(-3.5,-68,7,2);
+  ctx.restore();
+}
+function draw(){
+  const night=isNight(),m=calm/100;
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.setTransform(dpr*S,0,0,dpr*S,-OX*dpr*S,-OY*dpr*S);
+  ctx.save();ctx.clip(HEAD);
+  const sky=ctx.createLinearGradient(0,30,0,198);
+  if(night){sky.addColorStop(0,mix('#18202A','#0E1C2E',m));sky.addColorStop(1,mix('#323A46','#3A4C6C',m))}
+  else{sky.addColorStop(0,mix('#9AA3A9','#A9D4E6',m));sky.addColorStop(.7,mix('#C2C3BF','#F3E2CF',m));sky.addColorStop(1,mix('#CBC8C0','#F8D9BE',m))}
+  ctx.fillStyle=sky;ctx.fillRect(160,24,440,176);
+  if(night){stars.forEach(s=>{ctx.fillStyle='rgba(255,252,238,'+(.25+.45*m*(.75+.25*Math.sin(gt*.6+s.p)))+')';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill()});
+    ctx.fillStyle='#EFE7D0';ctx.beginPath();ctx.arc(440,112,17,0,7);ctx.fill();ctx.fillStyle=mix('#232B37','#1A2A42',m);ctx.beginPath();ctx.arc(448,107,14.5,0,7);ctx.fill()}
+  else{ctx.fillStyle='rgba(255,226,170,'+(.22*m)+')';ctx.beginPath();ctx.arc(440,150,38,0,7);ctx.fill();ctx.fillStyle=mix('#DCD6C8','#FCD9A0',m);ctx.beginPath();ctx.arc(440,150,22,0,7);ctx.fill()}
+  const cc=night?mix('#3A4352','#4F607C',m):mix('#A3AAAE','#FFFFFF',m);ctx.globalAlpha=night?.6:.85;clouds.forEach(c=>cloud(c.x,c.y,c.w,cc));ctx.globalAlpha=1;
+  if(calm<50){ctx.globalAlpha=(50-calm)/50*.8;cloud(270,80,70,night?'#2A303A':'#8A9196');cloud(430,66,76,night?'#2D333D':'#90979C');ctx.globalAlpha=1}
+  const sea=ctx.createLinearGradient(0,194,0,298);
+  if(night){sea.addColorStop(0,mix('#2C3742','#2B4A66',m));sea.addColorStop(1,mix('#1B242C','#142A40',m))}
+  else{sea.addColorStop(0,mix('#9AA7AC','#A4CDD8',m));sea.addColorStop(1,mix('#6B7D86','#4C8FA6',m))}
+  ctx.fillStyle=sea;ctx.fillRect(160,196,440,104);
+  ctx.fillStyle=night?'rgba(239,231,208,.10)':'rgba(255,236,200,.5)';ctx.fillRect(160,196,440,1);
+  ctx.fillStyle=night?'rgba(239,231,208,.22)':'rgba(255,240,210,'+(.55*m)+')';
+  for(let i=0;i<8;i++){const w=(20-i*2)*(.85+.15*Math.sin(gt*.5+i));ctx.fillRect(440-w/2,201+i*11,w,1.2)}
+  ctx.strokeStyle=night?'rgba(200,220,240,.12)':'rgba(255,255,255,.35)';ctx.lineWidth=1;
+  [[210,.4],[234,.6],[258,.8],[282,1]].forEach(([yy,k],r)=>{const off=reduce?0:(gt*2.2*k)%120;for(let x=160-120+off+r*37;x<600;x+=120){ctx.beginPath();ctx.moveTo(x,yy);ctx.lineTo(x+22*k,yy);ctx.stroke()}});
+  if(bz>=0){const p=bz/3;ctx.strokeStyle='rgba(255,255,255,'+(.45*(1-p))+')';ctx.lineWidth=1.2;const r=30+p*240;ctx.beginPath();ctx.arc(GIRL.x,GIRL.y-40,r,Math.PI*1.1,Math.PI*1.9);ctx.stroke()}
+  boats.filter(b=>b.st==='tug').forEach(b=>{ctx.save();ctx.setLineDash([2,5]);ctx.strokeStyle=night?'#C9D2D6':b.T.s;ctx.globalAlpha=.45;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(b.x,b.y+4);ctx.quadraticCurveTo((b.x+GIRL.x)/2,b.y+30,GIRL.x,GIRL.y-62);ctx.stroke();ctx.restore()});
+  [...boats].filter(b=>b.st!=='docked').sort((a,b)=>a.y-b.y).forEach(b=>drawBoat(b,night));
+  const sand=ctx.createLinearGradient(0,292,0,412);
+  sand.addColorStop(0,night?mix('#4A4538','#5C5544',m):mix('#D4CBB6','#EED9B2',m));sand.addColorStop(1,night?'#2E2A22':mix('#C2B69C','#DFC496',m));
+  ctx.fillStyle=sand;ctx.beginPath();ctx.moveTo(160,296);ctx.bezierCurveTo(260,288,330,300,420,292);ctx.bezierCurveTo(480,287,540,294,600,290);ctx.lineTo(600,420);ctx.lineTo(160,420);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=night?'rgba(220,230,240,.18)':'rgba(255,255,255,.7)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(160,296);ctx.bezierCurveTo(260,288,330,300,420,292);ctx.bezierCurveTo(480,287,540,294,600,290);ctx.stroke();
+  boats.filter(b=>b.st==='docked').forEach(b=>drawBoat(b,night));
+  if(calm<35&&mode!=='idle'){ctx.fillStyle='rgba(180,190,196,'+((35-calm)/35*.3)+')';ctx.fillRect(160,24,440,400)}
+  const br=breath.ph==='in'?Math.min(1,breath.t/4):breath.ph==='out'?1-Math.min(1,breath.t/3.5):(reduce?0:(Math.sin(gt*.8)+1)*.2);
+  if(m>.65){ctx.fillStyle='rgba(255,236,196,'+((m-.65)*.35)+')';ctx.beginPath();ctx.arc(GIRL.x,GIRL.y-34,46,0,7);ctx.fill()}
+  drawGirl(night,br);
+  rings.forEach(r=>{ctx.strokeStyle='rgba(255,246,220,'+(r.l*.7)+')';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,7);ctx.stroke()});
+  ctx.restore();
+  ctx.strokeStyle='rgba(238,243,241,.85)';ctx.lineWidth=1.8;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke(HEAD_LINE);
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font='500 13px Figtree, system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  const cw=cv.width/dpr;
+  boats.forEach(b=>{if(b.labT<=0)return;const a=Math.min(1,b.labT/.8,(b.labT>3?1:1));const sx=(b.x-OX)*S,sy=(b.y-OY-50*b.sc)*S-12;const tw=ctx.measureText(b.lab).width+20;const x0=Math.max(4,Math.min(cw-tw-4,sx-tw/2));
+    ctx.globalAlpha=a*.95;ctx.fillStyle=night?'rgba(14,33,44,.92)':'rgba(255,255,255,.94)';rr(x0,sy-13,tw,26,13);ctx.fill();ctx.fillStyle=b.T.c;ctx.beginPath();ctx.arc(x0+10,sy,0,0,7);ctx.fill();ctx.fillStyle=night?'#E6EEEF':'#142B36';ctx.fillText(b.lab,x0+tw/2,sy+.5)});
+  floats.forEach(f=>{ctx.globalAlpha=Math.max(0,1-f.t/2);ctx.fillStyle=night?'#F3E2B8':'#5E4A1E';ctx.font='600 12px Figtree, system-ui, sans-serif';ctx.fillText(f.txt,(f.x-OX)*S,(f.y-OY)*S-f.t*14)});
+  ctx.globalAlpha=1;
+}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+let last=performance.now();
+function loop(n){const dt=Math.min(.05,(n-last)/1000);last=n;if(mode!=='paused')update(dt);draw();requestAnimationFrame(loop)}
+for(let i=0;i<3;i++){spawn(pick(KEYS));const b=boats[boats.length-1];b.x=rnd(230,500);b.labT=0}
+requestAnimationFrame(loop);
+
+let AC=null,master=null,soundOn=false,noise=null;
+function initAudioMaybe(){if(!soundOn||AC)return;try{
+  AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.5;master.connect(AC.destination);
+  const len=AC.sampleRate*3;noise=AC.createBuffer(1,len,AC.sampleRate);const d=noise.getChannelData(0);let l=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;l=(l+.02*w)/1.02;d[i]=l*3.2}
+  const src=AC.createBufferSource();src.buffer=noise;src.loop=true;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=420;
+  const g=AC.createGain();g.gain.value=.2;const lfo=AC.createOscillator();lfo.frequency.value=.07;const lg=AC.createGain();lg.gain.value=.12;lfo.connect(lg);lg.connect(g.gain);
+  src.connect(lp);lp.connect(g);g.connect(master);src.start();lfo.start();
+}catch(e){AC=null}}
+function tone(f,dur,vol,type){if(!soundOn||!AC)return;const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(vol,n+.03);g.gain.exponentialRampToValueAtTime(.0001,n+dur);o.connect(g);g.connect(master);o.start(n);o.stop(n+dur+.05)}
+function chime(f){tone(f,2,.1);tone(f*2,1.4,.025)}
+function thud(){tone(110,1.1,.1,'triangle')}
+function whoosh(){if(!soundOn||!AC||!noise)return;const s=AC.createBufferSource();s.buffer=noise;const bp=AC.createBiquadFilter();bp.type='bandpass';bp.Q.value=.7;const g=AC.createGain(),n=AC.currentTime;bp.frequency.setValueAtTime(260,n);bp.frequency.exponentialRampToValueAtTime(1100,n+2.2);g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(.4,n+.5);g.gain.linearRampToValueAtTime(0,n+2.6);s.connect(bp);bp.connect(g);g.connect(master);s.start(n);s.stop(n+2.7)}
+$('#soundBtn').addEventListener('click',function(){soundOn=!soundOn;this.textContent=soundOn?'Sound on':'Sound off';this.setAttribute('aria-pressed',soundOn);if(soundOn){initAudioMaybe();if(AC){AC.resume();master.gain.setTargetAtTime(.5,AC.currentTime,.2)}}else if(AC)master.gain.setTargetAtTime(0,AC.currentTime,.2)});
+})();
+</script>
+</body>
+</html>
