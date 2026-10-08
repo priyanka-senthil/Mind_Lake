@@ -5,6 +5,7 @@
 ### 👉 [Try it here: priyanka-senthil.github.io/Mind_Lake](https://priyanka-senthil.github.io/Mind_Lake/)
 
 Mind lake is a calm, 90-second mindfulness game for grown-ups and kids. Inside a human head, a child sits on a quiet shore and watches thoughts sail across a lake as colored boats: kindness, friendship, silly ideas, worries, comparison, self-doubt, and more.
+<img width="1267" height="833" alt="image" src="https://github.com/user-attachments/assets/ca80fcb4-de05-4f90-a839-129002267664" />
 
 You don't fight your thoughts or chase them. You notice them, take a slow breath, and let them sail out of sight.
 
